@@ -107,5 +107,7 @@ title('Ballbot body lean trajectory')
 
 %% Run Animation
 Anim.speed = 1;
+Anim.vidName = 'MPC-QP-planar_ballbot';
+Anim.avi = 1;
 Anim.plotFunc = @draw_bb;
 animate(t_out,X_out,Anim);
