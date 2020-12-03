@@ -41,8 +41,6 @@ g=9.81;
 k_cmd=1;
 tau = 0.01;
 
-
-
 % Weights on state deviation and control input
 Qx = diag([100 100 1 100]);
 Qn = 10*Qx;
