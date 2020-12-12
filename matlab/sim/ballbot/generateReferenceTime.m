@@ -1,12 +1,13 @@
-function refTraj = generateReference(name,dt)
+function refTraj = generateReferenceTime(name,t,dt, N_traj)
 
 % Ball radius
 r = 0.105838037; % ballbot ball radius [m]
 %r = 0.0762; % shmoobot ball radius [m]
 
 if strcmp(name,'sinusoidal')
-    N_traj = 1000;
-    x_ref = sin(0.001*(0:N_traj-1));
+    %N_traj = 200;
+    tend = t + dt*(N_traj-1);
+    x_ref = sin(0.05*(t:dt:tend));
     theta_ref = x_ref/r;
     phi_ref = zeros(1,N_traj);
 
