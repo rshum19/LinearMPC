@@ -75,8 +75,9 @@ while(step <  4000)
     if(tf < 30)
         mpcRef = zeros(4,N+1);
         mpcRef(1,:) = 1*(tf:dt:(tf+dt*N));
+        mpcRef(3,:) = 1*ones(1,N+1);
     else
-       
+       mpcRef(3,:) = zeros(1,N+1);
     end
     
 %     % Sample reference trajectory
@@ -91,7 +92,7 @@ while(step <  4000)
         
 
     %u = uOpt;
-    u = 0.1*[0;uOpt(2);uOpt(3);0];
+    u = 0.2*[0;uOpt(2);uOpt(3);0];
     %u = uOpt;
     % Simulate with ode45
     t0 = (step-1)*dt;
@@ -109,7 +110,6 @@ while(step <  4000)
     fprintf("Time: %d ", t0);
 end
 
-%plotTrajectory(qCache,optCache,uCache,refTraj,dt,false)
 plotResults(qCache,optCache,uCache,mpcRefCache,tCache,dt,false)
 
 
