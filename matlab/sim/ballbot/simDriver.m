@@ -52,9 +52,9 @@ Bcld = B*Klqr;
 mpc = LinearMPC(Acld,Bcld,Qx,Qn,Ru,stateBounds,controlBounds,N,'Solver','osqp');
 
 % Reference Trajectory Generation
-refTraj = generateReference('sinusoidal',dt);
+motion_name = 'straight';
 %refTraj = generateReferenceTime('sinusoidal',0,dt,N);
-N_traj = size(refTraj,2);
+N_traj = 200;
 
 % Initial state
 qCur = [0; 0*pi/180; 0; 0];
@@ -71,18 +71,18 @@ step = 1;
 tf = 0;
 while(step <  4000)
     tic
-    
-    if(tf < 30)
-        mpcRef = zeros(4,N+1);
-        mpcRef(1,:) = 1*(tf:dt:(tf+dt*N));
-        mpcRef(3,:) = 1*ones(1,N+1);
-    else
-       mpcRef(3,:) = zeros(1,N+1);
-    end
+%     
+%     if(tf < 30)
+%         mpcRef = zeros(4,N+1);
+%         mpcRef(1,:) = 1*(tf:dt:(tf+dt*N));
+%         mpcRef(3,:) = 1*ones(1,N+1);
+%     else
+%        mpcRef(3,:) = zeros(1,N+1);
+%     end
     
 %     % Sample reference trajectory
-%     mpcRef_full = generateReferenceTime('square',tf,dt,N+1);
-%     mpcRef = mpcRef_full(1:4,:); 
+    mpcRef_full = generateReferenceTime(motion_name,tf,dt,N+1);
+    mpcRef = mpcRef_full(1:4,:); 
 
     % Collect MPC Control (roll,pitch,thrust commands, all in world frame)
     tic
@@ -91,9 +91,8 @@ while(step <  4000)
     [uOpt,optTraj] = mpc.getOutput(Qout); % Collect first control, optimzied state traj 
         
 
-    %u = uOpt;
     u = 0.2*[0;uOpt(2);uOpt(3);0];
-    %u = uOpt;
+
     % Simulate with ode45
     t0 = (step-1)*dt;
     tf = t0+dt;

@@ -16,18 +16,18 @@ if strcmp(name,'sinusoidal')
 
     refTraj = [theta_ref; phi_ref; dtheta_ref; dphi_ref; x_ref];    
 elseif strcmp(name,'straight')
-    tend = 5;
-    xVel = 0.01;
+    tend = 30;
+    xVel = 1;
     if(t < tend)
         x_ref = xVel*(t:dt:(t+dt*(N_traj-1)));
-        theta_ref = x_ref/r;
+        theta_ref = x_ref;
         phi_ref = zeros(1,N_traj);
         
-        dtheta_ref = [0, xVel/r*ones(1,(N_traj-1))];
-        dphi_ref = [0, diff(phi_ref)/dt];    
+        dtheta_ref = xVel*ones(1,(N_traj));
+        dphi_ref = zeros(1,N_traj);    
     else
         x_ref = xVel*tend*ones(1,N_traj);
-        theta_ref = x_ref/r;
+        theta_ref = x_ref;
         phi_ref = zeros(1,N_traj);
         
         dtheta_ref = 0*[0, diff(theta_ref)/dt];
