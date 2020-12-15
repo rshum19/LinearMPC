@@ -1,15 +1,7 @@
-function dx = ballbotDynamics(t,x,x_d,model_params)
+function dx = ballbotDynamicsOL(t,x,u,model_params)
 %ballbotDynamics Ballbot dynamics function, includes low level balancing
 %controller
 
-% q = x, y, z, dx, dy, dz, roll, pitch
-
-% u = roll, pitch, thrust  (command, angles in world frame);
-xd.ref_traj = x_d;
-% Compute Control
-ctrl_params.u_max = inf;
-[u,~] = LQR_controller(t,x,xd,ctrl_params);
-%u = -u;
 
 % Nonlinear dynamics
 model_nl_dyn = @(t,x,u)ballbot2D_dyn_wrap(t,x,u,model_params);

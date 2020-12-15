@@ -16,15 +16,46 @@ if strcmp(name,'sinusoidal')
 
     refTraj = [theta_ref; phi_ref; dtheta_ref; dphi_ref; x_ref];    
 elseif strcmp(name,'straight')
-    xref = [(0:0.1:5), (5:-0.1:0)];
-    yref = zeros(size(xref));
-    zref = zeros(size(xref));
-    rollref = zeros(size(zref));
-    pitchref = zeros(size(zref));
+    tend = 5;
+    xVel = 0.01;
+    if(t < tend)
+        x_ref = xVel*(t:dt:(t+dt*(N_traj-1)));
+        theta_ref = x_ref/r;
+        phi_ref = zeros(1,N_traj);
+        
+        dtheta_ref = [0, xVel/r*ones(1,(N_traj-1))];
+        dphi_ref = [0, diff(phi_ref)/dt];    
+    else
+        x_ref = xVel*tend*ones(1,N_traj);
+        theta_ref = x_ref/r;
+        phi_ref = zeros(1,N_traj);
+        
+        dtheta_ref = 0*[0, diff(theta_ref)/dt];
+        dphi_ref = [0, diff(phi_ref)/dt];   
+    end
 
-    dxref = [0, diff(xref)/dt];
-    dyref = [0, diff(yref)/dt];
-    dzref = [0, diff(zref)/dt]; 
+    refTraj = [theta_ref; phi_ref; dtheta_ref; dphi_ref; x_ref];    
+elseif strcmp(name,'square')
+    tramp = 5.0;
+    Amp = 0.3;
+    if(t < tramp)
+        theta_ref =zeros(1,N_traj);
+        phi_ref =zeros(1,N_traj);
+        dtheta_ref =zeros(1,N_traj);
+        dphi_ref =zeros(1,N_traj);
+        x_ref = zeros(1,N_traj);
+    else
+        x_ref = Amp*ones(1,N_traj);
+        theta_ref = ones(1,N_traj);
+        phi_ref =zeros(1,N_traj);
+        dtheta_ref =zeros(1,N_traj);
+        dphi_ref =zeros(1,N_traj);
+    end
 
-    refTraj = [xref;yref;zref;dxref;dyref;dzref;rollref;pitchref];
+    refTraj = [theta_ref; phi_ref; dtheta_ref; dphi_ref; x_ref];    
+
+elseif strcmp(name,'zero')
+    
+    refTraj = zeros(5,N_traj);
+
 end

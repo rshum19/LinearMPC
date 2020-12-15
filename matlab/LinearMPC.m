@@ -118,17 +118,19 @@ classdef LinearMPC < handle
         function [lb,ub] = getStateControlBounds(obj, initialState)
             % lb <= x <= ub
             
-            % Enforce state bounds
+            % Enforce state boundsdr
             xmin = obj.StateBounds(:,1);
             xmax = obj.StateBounds(:,2);
             
             % Enforce control bounds
             umin = obj.ControlBounds(:,1);
             umax = obj.ControlBounds(:,2);
+          
+%             lb = [initialState;repmat(xmin,obj.N,1);repmat(umin,obj.N,1)];
+%             ub = [initialState;repmat(xmax,obj.N,1);repmat(umax,obj.N,1)];
             
-            lb = [initialState;repmat(xmin,obj.N,1);repmat(umin,obj.N,1)];
-            ub = [initialState;repmat(xmax,obj.N,1);repmat(umax,obj.N,1)];
-            
+            lb = [repmat(xmin,obj.N+1,1);repmat(umin,obj.N,1)];
+            ub = [repmat(xmax,obj.N+1,1);repmat(umax,obj.N,1)];
         end
         
         function [u0,optTraj] = getOutput(obj,xout)
@@ -145,6 +147,7 @@ classdef LinearMPC < handle
             ustart = xend;
             for i = 1:obj.Nu
                 u0(i,:) = xout(ustart+i);
+                %u0(i,:) = xout(ustart+i:obj.Nu:end)';
             end
         end
             

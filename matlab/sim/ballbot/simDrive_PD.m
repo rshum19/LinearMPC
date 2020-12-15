@@ -1,61 +1,60 @@
-close all; clc;
+% clear workspace
+clear all; close all; clc;
 addpath('../..')
 addpath('../../qpOASES/interfaces/matlab')
 addpath('../../osqp-matlab')
 
 N = 10;
 dt = 0.01;
-dt_attitude = 0.01; % Attitude controller update rate
+dt_attitude = 0.001; % Attitude controller update rate
 
 % System parameters
 
 % Weights on state deviation and control input
-Qx = diag([100 1 1 1]);
+Qx = diag([100 10 1 0]);
 Qn = 10*Qx;
 Ru = diag([1]);
 
 % Bounds on states and controls
-xmin = [-inf;   -10;     -inf;  -inf];
-xmax = [inf;    10;  inf;    inf];
-umin = [-inf];
-umax = [inf];
-% 
-% xmin = [-inf;   -inf;     -inf;  -inf];
-% xmax = [inf;    inf;  inf;   inf];
-% umin = [-inf;   -inf;     -inf;  -inf];
-% umax = [inf;    inf;  inf;   inf];
+xmin = [-inf;   -5*pi/180;     -inf;  -inf];
+xmax = [inf;    5*pi/180;  inf;    inf];
+umin = [-20];
+umax = [20];
+ 
 
 stateBounds = [xmin xmax];
 controlBounds = [umin umax];
 
+% load ballbot params
+[params,~] = get_ballbot2D_model_params();
+%[params] = get_shmoo_model_params(2);
+
 % Linearized dynamics
-Ad = [0, 0, 1, 0;...
+A = [0, 0, 1, 0;...
       0, 0, 0, 1;...
       0, -171.8039, 0, 0;...
       0, 24.3626, 0,0];
   
-Bd = [0;
+B = [0;
       0;
       5.0686;
       -0.4913];
+  
 
-% load ballbot params
-[params] = get_ballbot2D_model_params(1);
-%[params] = get_shmoo_model_params(2);
-%load(params);
+Ad = expm(A*dt);
+Bd = expm(A*dt - eye(size(A)))*pinv(A)*B;
+
 
 % Setup MPC object
 mpc = LinearMPC(Ad,Bd,Qx,Qn,Ru,stateBounds,controlBounds,N,'Solver','osqp');
-
 
 % Reference Trajectory Generation
 refTraj = generateReference('sinusoidal',dt);
 %refTraj = generateReferenceTime('sinusoidal',0,dt,N);
 N_traj = size(refTraj,2);
 
-qCur = refTraj(1:4,1);
+% Initial state
 qCur = [0; 0*pi/180; 0; 0];
-%qCur = zeros(4,1);
 
 qCache = [];
 optCache = [];
@@ -86,9 +85,18 @@ while(step < N_traj)
 
 %     refTraj = generateReferenceTime('sinusoidal',tf,dt,N+1);
     %mpcRef = refTraj(1:4,:);
-    mpcRef = zeros(4,N+1);
-    mpcRef(1,:) = sin(0.5*(tf:dt:(tf+dt*N)));
-    %mpcRef(:,1) = qCur;
+    %mpcRef(1,:) = sin(0.5*(tf:dt:(tf+dt*N)));
+    
+    if(tf < 5)
+        mpcRef = zeros(4,N+1);
+        mpcRef(1,:) = 10*(tf:dt:(tf+dt*N));
+    else
+       
+    end
+    % Sample reference trajectory
+ 
+%     refTraj2 = generateReferenceTime('straight',tf,dt,N);
+%     mpcRef = refTraj2(1:4,:);
     
     % Collect MPC Control (roll,pitch,thrust commands, all in world frame)
     tic
@@ -96,9 +104,7 @@ while(step < N_traj)
     toc
     [uOpt,optTraj] = mpc.getOutput(Qout); % Collect first control, optimzied state traj 
     
-    u = -uOpt(:,1);
-    u(2) = 2*u(2);
-    %u2 = -uOpt(:,2);
+    u = uOpt;
     % Simulate with ode45
     t0 = (step-1)*dt;
     tf = t0+dt;
@@ -116,6 +122,4 @@ while(step < N_traj)
 end
 
 %plotTrajectory(qCache,optCache,uCache,refTraj,dt,false)
-plotResults(qCache,optCache,uCache,mpcRefCache,tCache,dt,false)
-
-
+plotResultsOL(qCache,optCache,uCache,mpcRefCache,tCache,dt,false)
